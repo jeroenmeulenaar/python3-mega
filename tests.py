@@ -22,8 +22,6 @@ class TestMega(unittest.TestCase):
         return uploaded
 
     def _test_upload_file(self, api):
-        api.get_files()
-
         # Create temp file
         uFile, uFilePath = tempfile.mkstemp()
         os.write(uFile, "Does it work?")
