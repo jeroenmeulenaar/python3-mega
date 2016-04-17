@@ -205,8 +205,8 @@ class Mega(object):
 
     def uploadfile(self, filename, dst=None):
         if not dst:
-            root_id = getattr(self, 'root_id')
-            if not root_id:
+            root_id = getattr(self, 'root_id', None)
+            if root_id == None:
                 self.get_files()
             dst = self.root_id
         infile = open(filename, 'rb')
