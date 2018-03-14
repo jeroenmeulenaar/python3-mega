@@ -10,8 +10,8 @@ from mega.exceptions import MegaIncorrectPasswordExcetion
 class TestMega(unittest.TestCase):    
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self._email = os.environ.get('MEGAEMAIL') or sys.argv[0]
-        self._password = os.environ.get('MEGAPASSWORD') or sys.argv[1]
+        self._email = os.environ.get('MEGAEMAIL')
+        self._password = os.environ.get('MEGAPASSWORD')
 
     def _check_file_exists(self, file_name, files):
         uploaded = False
