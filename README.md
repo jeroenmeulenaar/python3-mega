@@ -6,16 +6,18 @@
 
 Wrapper around the [Mega API](https://mega.co.nz/#developers). Based on the work of [Julien Marchand](http://julien-marchand.fr/blog/using-mega-api-with-python-examples/).
 
+This is a fork of [Juan Riaza's github project](https://github.com/juanriaza/python-mega), which is not maintained anymore.
+
 ## Installation
 
 Install using `pip`, including any optional packages you want...
 	
-	$ pip install python-mega
+	$ pip install python3-mega
 
 ...or clone the project from github.
 
-    $ git clone git@juanriaza/python-mega.git
-    $ cd python-mega
+    $ git clone git@jeroenmeulenaar/python3-mega.git
+    $ cd python3-mega
     $ pip install -r requirements.txt
 
 ## How to use it?
@@ -52,17 +54,11 @@ m.download_from_url('https://mega.co.nz/#!wYo3AYZC!Zwi1f3ANtYwKNOc07fwuN1enOoRj4
 
 ## Running the tests
 
-    $ ./tests.py
-
-## Changelog
-
-### 0.1.0
-
-**31th Jan 2012**
-
-* First release.
+    $ export MEGAEMAIL=kim@dot.com
+    $ export MEGAPASSWORD=olakase
+    $ python tests.py
 
 ## Acknowledgements
 
 - Many thanks to Julien Marchand for the initial work.
-- All of the [contributors](https://github.com/juanriaza/python-mega/blob/master/CONTRIBUTORS.md) to this project.
+- All of the [contributors](https://github.com/juanriaza/python-mega/blob/master/CONTRIBUTORS.md) to the original github project
