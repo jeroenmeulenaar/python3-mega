@@ -22,8 +22,13 @@ def aes_cbc_encrypt_a32(data, key):
 def str_to_a32(b):
     if len(b) % 4:  # Add padding, we need a string with a length multiple of 4
         b += '\0' * (4 - len(b) % 4)
-    return struct.unpack('>%dI' % (len(b) / 4), b)
-
+    # For python3, we actually need bytes instead of a string.
+    # This is a quick hack: a better solution would be to make sure
+    # this function is only called with bytes as input
+    if type(b) == str:
+        b = bytes(b, 'utf-8') # utf-8 is an assumption here
+    fmt = '>%dI' % (len(b) / 4)
+    return struct.unpack(fmt, b)
 
 def mpi2int(s):
     return int(binascii.hexlify(s[2:]), 16)
@@ -50,7 +55,9 @@ def base64_to_a32(s):
 
 
 def base64urlencode(data):
-    data = base64.b64encode(data)
+    # add utf-8 encoding. likely there's a better method than b64encode
+    # to get a string directly, as this looks like the point of base64 encoding
+    data = base64.b64encode(data).decode('utf-8')
     for search, replace in (('+', '-'), ('/', '_'), ('=', '')):
         data = data.replace(search, replace)
     return data

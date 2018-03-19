@@ -10,11 +10,11 @@ from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
 from Crypto.Util import Counter
 
-from .crypto import prepare_key, stringhash, encrypt_key, decrypt_key,\
+from mega.crypto import prepare_key, stringhash, encrypt_key, decrypt_key,\
     enc_attr, dec_attr, aes_cbc_encrypt_a32
-from .utils import a32_to_str, str_to_a32, a32_to_base64, base64_to_a32,\
+from mega.utils import a32_to_str, str_to_a32, a32_to_base64, base64_to_a32,\
     mpi2int, base64urlencode, base64urldecode, get_chunks
-from .exceptions import MegaRequestException, MegaIncorrectPasswordExcetion
+from mega.exceptions import MegaRequestException, MegaIncorrectPasswordExcetion
 
 
 class Mega(object):
@@ -88,15 +88,15 @@ class Mega(object):
             privk = a32_to_str(rsa_priv_key)
             self.rsa_priv_key = [0, 0, 0, 0]
 
-            for i in xrange(4):
-                l = ((ord(privk[0]) * 256 + ord(privk[1]) + 7) / 8) + 2
+            for i in range(4):
+                l = ((privk[0] * 256 + privk[1] + 7) // 8) + 2
                 self.rsa_priv_key[i] = mpi2int(privk[:l])
                 privk = privk[l:]
 
             enc_sid = mpi2int(base64urldecode(res['csid']))
             decrypter = RSA.construct(
                 (self.rsa_priv_key[0] * self.rsa_priv_key[1],
-                 0L,
+                 0,
                  self.rsa_priv_key[2],
                  self.rsa_priv_key[0],
                  self.rsa_priv_key[1]))
@@ -139,7 +139,7 @@ class Mega(object):
         file_id, file_key = url_object.fragment[1:].split('!')
         self.download_file(file_id, file_key, public=True)
 
-    def download_file(self, file_id, file_key, public=False):
+    def download_file(self, file_id, file_key, public=False, store_path=None):
         if public:
             file_key = base64_to_a32(file_key)
             file_data = self.api_req({'a': 'g', 'g': 1, 'p': file_id})
@@ -160,6 +160,8 @@ class Mega(object):
         file_name = attributes['n']
 
         infile = requests.get(file_url, stream=True).raw
+        if store_path:
+            file_name = os.path.join(store_path, file_name)
         outfile = open(file_name, 'wb')
 
         counter = Counter.new(
@@ -173,10 +175,10 @@ class Mega(object):
             outfile.write(chunk)
 
             chunk_mac = [iv[0], iv[1], iv[0], iv[1]]
-            for i in xrange(0, len(chunk), 16):
+            for i in range(0, len(chunk), 16):
                 block = chunk[i:i+16]
                 if len(block) % 16:
-                    block += '\0' * (16 - (len(block) % 16))
+                    block += b'\0' * (16 - (len(block) % 16))
                 block = str_to_a32(block)
                 chunk_mac = [
                     chunk_mac[0] ^ block[0],
@@ -213,7 +215,7 @@ class Mega(object):
         size = os.path.getsize(filename)
         ul_url = self.api_req({'a': 'u', 's': size})['p']
 
-        ul_key = [random.randint(0, 0xFFFFFFFF) for _ in xrange(6)]
+        ul_key = [random.randint(0, 0xFFFFFFFF) for _ in range(6)]
         counter = Counter.new(
             128, initial_value=((ul_key[4] << 32) + ul_key[5]) << 64)
         encryptor = AES.new(
@@ -226,10 +228,10 @@ class Mega(object):
             chunk = infile.read(chunk_size)
 
             chunk_mac = [ul_key[4], ul_key[5], ul_key[4], ul_key[5]]
-            for i in xrange(0, len(chunk), 16):
+            for i in range(0, len(chunk), 16):
                 block = chunk[i:i+16]
                 if len(block) % 16:
-                    block += '\0' * (16 - len(block) % 16)
+                    block += b'\0' * (16 - len(block) % 16)
                 block = str_to_a32(block)
                 chunk_mac = [chunk_mac[0] ^ block[0],
                              chunk_mac[1] ^ block[1],
@@ -246,7 +248,12 @@ class Mega(object):
             chunk = encryptor.encrypt(chunk)
             url = '%s/%s' % (ul_url, str(chunk_start))
             outfile = requests.post(url, data=chunk, stream=True).raw
-            completion_handle = outfile.read()
+
+            # assume utf-8 encoding. Maybe this entire section can be simplified
+            # by not looking at the raw output
+            # (http://docs.python-requests.org/en/master/user/advanced/#body-content-workflow)
+
+            completion_handle = outfile.read().decode('utf-8')
         infile.close()
 
         meta_mac = (file_mac[0] ^ file_mac[1], file_mac[2] ^ file_mac[3])
