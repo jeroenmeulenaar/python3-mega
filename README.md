@@ -1,6 +1,6 @@
 # python-mega
 
-[![Build Status](https://travis-ci.org/juanriaza/python-mega.png?branch=master)](https://travis-ci.org/juanriaza/python-mega)
+[![Build Status](https://travis-ci.org/jeroenmeulenaar/python3-mega.png?branch=master)](https://travis-ci.org/jeroenmeulenaar/python3-mega)
 
 ## Overview
 
