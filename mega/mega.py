@@ -134,10 +134,10 @@ class Mega(object):
                 self.trashbin_id = file['h']
         return files_data
 
-    def download_from_url(self, url):
+    def download_from_url(self, url, store_path=None):
         url_object = URLObject(url)
         file_id, file_key = url_object.fragment[1:].split('!')
-        self.download_file(file_id, file_key, public=True)
+        self.download_file(file_id, file_key, public=True, store_path=store_path)
 
     def download_file(self, file_id, file_key, public=False, store_path=None):
         if public:
